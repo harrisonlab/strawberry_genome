@@ -39,12 +39,33 @@ cat /data/seq_data/external/redgauntlet_promethion_downloads/*/postprocessing/*.
 ### Removal of adapters
 
 Splitting reads and trimming adapters using porechop
+
 ```bash
-	for RawReads in $(ls raw_dna/minion/*/*/*.fastq.gz | grep -v 'keygene'); do
-    Organism=$(echo $RawReads | rev | cut -f3 -d '/' | rev)
-    Strain=$(echo $RawReads | rev | cut -f2 -d '/' | rev)
+	for RawReads in $(ls ../../../seq_data/external/redgauntlet_promethion_downloads/*/postprocessing/*.fastq.gz | grep 'PAC21093'); do
+    Organism=F.ananassa
+    Strain=redgauntlet
     echo "$Organism - $Strain"
-  	OutDir=qc_dna/minion/$Organism/$Strain
+  	OutDir=raw_dna/minion/F.ananassa/redgauntlet/split
+    mkdir -p $OutDir
+    gunzip -c $RawReads | split -l 1000000 - $OutDir/'PAC21093_split_'
+    for File in $(ls $OutDir/PAC21093_split_* | grep -v 'fq.gz'); do
+      cat $File | gzip -cf > ${File}.fq.gz
+    done
+  done
+```
+```bash
+	for RawReads in $(ls raw_dna/minion/F.ananassa/redgauntlet/split/*.fq.gz); do
+    Organism=F.ananassa
+    Strain=redgauntlet
+    Jobs=$(qstat | grep 'sub_pore' | grep 'qw' | wc -l)
+    while [ $Jobs -gt 1 ]; do
+    sleep 1m
+    printf "."
+    Jobs=$(qstat | grep 'sub_pore' | grep 'qw' | wc -l)
+    done		
+    printf "\n"
+    echo "$Organism - $Strain"
+  	OutDir=qc_dna/minion/$Organism/$Strain/split
   	ProgDir=/home/armita/git_repos/emr_repos/tools/seq_tools/dna_qc
   	qsub $ProgDir/sub_porechop.sh $RawReads $OutDir
   done
