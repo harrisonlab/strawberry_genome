@@ -72,6 +72,10 @@ Splitting reads and trimming adapters using porechop
 ```
 
 ```bash
+cat qc_dna/minion/F.ananassa/redgauntlet/split/* > qc_dna/minion/F.ananassa/redgauntlet/PAC21093_trim.fastq.gz
+```
+
+```bash
 	for RawReads in $(ls ../../../seq_data/external/redgauntlet_promethion_downloads/*/postprocessing/*.fastq.gz); do
     Organism=F.ananassa
     Strain=redgauntlet
@@ -86,5 +90,46 @@ Splitting reads and trimming adapters using porechop
 
 ```bash
 ProgDir=/home/armita/git_repos/emr_repos/scripts/strawberry_genome/scripts
-$ProgDir/sub_canu_correct.*.fastq.sh
+qsub $ProgDir/sub_canu_correct.sh
+```
+
+This job failed due the high number of short reads. Following the instructions the
+following commands was used to carry on anyway and the job resubmitted.
+
+```bash
+cat /data/scratch/armita/strawberry_assembly/raw_dna/minion/F.ananassa/redgauntlet/split/* > /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAC21093_trim.fastq.gz
+```
+
+```
+-- In gatekeeper store 'correction/Fa_Rg_appended.gkpStore':
+--   Found 4865813 reads.
+--   Found 61390442243 bases (85.26 times coverage).
+--
+--   Read length histogram (one '*' equals 41501.04 reads):
+--        0   9999 2905073 **********************************************************************
+--    10000  19999 879511 *********************
+--    20000  29999 508649 ************
+--    30000  39999 291504 *******
+--    40000  49999 149895 ***
+--    50000  59999  71344 *
+--    60000  69999  31862
+--    70000  79999  13940
+--    80000  89999   6404
+--    90000  99999   3257
+--   100000 109999   1871
+--   110000 119999    980
+--   120000 129999    600
+--   130000 139999    366
+--   140000 149999    223
+--   150000 159999    139
+--   160000 169999     68
+--   170000 179999     34
+--   180000 189999     25
+--   190000 199999     16
+--   200000 209999     12
+--   210000 219999      6
+--   220000 229999      4
+
+
+--   1210000 1219999      1
 ```

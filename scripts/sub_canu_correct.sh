@@ -4,7 +4,7 @@
 
 #$ -S /bin/bash
 #$ -cwd
-#$ -pe smp 24
+#$ -pe smp 23
 #$ -l virtual_free=15.5G
 #$ -l h=blacklace11.blacklace
 
@@ -34,21 +34,24 @@ echo "$Usage"
 
 
 
-Fastq1=$(ls /data/scratch/armita/strawberry_assembly/raw_dna/minion/F.ananassa/redgauntlet/redgauntlet_2017_reads.fastq.gz)
-Fastq2=$(ls /data/scratch/armita/strawberry_assembly/raw_dna/minion/F.ananassa/redgauntlet/redgauntlet_2018_reads.fastq.gz)
-Fastq3=$(ls /data/scratch/armita/strawberry_assembly/raw_dna/minion/F.ananassa/redgauntlet/redgauntlet_keygene.fastq.gz)
+Fastq1=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/redgauntlet_2017_reads_trim.fastq.gz)
+Fastq2=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/redgauntlet_2018_reads_trim.fastq.gz)
+Fastq3=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/FAH88888_trim.fastq.gz)
+Fastq4=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAC21038_trim.fastq.gz)
+Fastq5=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAC21093_trim.fastq.gz)
 
-Size=720
+Size=720m
 Prefix=Fa_Rg_appended
 OutDir=assembly/canu-1.6/F.ananassa/redgauntlet
 echo "Running Canu with the following inputs:"
-echo "FastqIn - $Fastq1 $Fastq2 $Fastq3"
+echo "FastqIn - $Fastq1 $Fastq2 $Fastq3 $Fastq4 $Fastq5"
 echo "Size - $Size"
 echo "Prefix - $Prefix"
 echo "OutDir - $OutDir"
 
 CurPath=$PWD
-WorkDir="$TMPDIR"/canu
+# WorkDir="$TMPDIR"/canu
+WorkDir=/data2/scratch2/armita/strawberry_genome/canu
 
 # ---------------
 # Step 2
@@ -57,27 +60,27 @@ WorkDir="$TMPDIR"/canu
 echo "Concatenating reads"
 mkdir -p $WorkDir
 cd $WorkDir
-Fastq=appended_reads.fq.gz
-cat $Fastq1 $Fastq2 $Fastq3 > $Fastq
+mkdir -p /data2/scratch2/armita/strawberry_genome
+Fastq=/data2/scratch2/armita/strawberry_genome/appended_reads.fq.gz
+# cat $Fastq1 $Fastq2 $Fastq3 $Fastq4 $Fastq5 > $Fastq
 
 echo "Reads concatenated"
 
 canu \
   -correct \
   -useGrid=false \
-  $AdditionalCommands \
   -overlapper=mhap \
   -utgReAlign=true \
   -d $WorkDir/assembly \
   -p $Prefix \
   genomeSize="$Size" \
+  ovsMethod=sequential \
   -nanopore-raw $Fastq \
   2>&1 | tee canu_run_log.txt
 
 canu \
   -trim \
   -useGrid=false \
-  $AdditionalCommands \
   -overlapper=mhap \
   -utgReAlign=true \
   -d $WorkDir/assembly \
