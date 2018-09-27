@@ -86,6 +86,7 @@ canu \
   -d $WorkDir/assembly \
   -p $Prefix \
   genomeSize="$Size" \
+  ovsMethod=sequential \
   -nanopore-corrected assembly/$Prefix.correctedReads.fasta.gz \
   2>&1 | tee canu_run_log.txt
 
