@@ -133,3 +133,36 @@ cat /data/scratch/armita/strawberry_assembly/raw_dna/minion/F.ananassa/redgauntl
 
 --   1210000 1219999      1
 ```
+
+
+
+### Assembly using SMARTdenovo
+
+```bash
+for CorrectedReads in $(ls assembly/canu-1.6/*/*/*.trimmedReads.fasta.gz); do
+Organism=$(echo $CorrectedReads | rev | cut -f3 -d '/' | rev)
+Strain=$(echo $CorrectedReads | rev | cut -f2 -d '/' | rev)
+Prefix="$Strain"_smartdenovo
+OutDir=assembly/SMARTdenovo/$Organism/"$Strain"
+ProgDir=/home/armita/git_repos/emr_repos/tools/seq_tools/assemblers/SMARTdenovo
+qsub $ProgDir/sub_SMARTdenovo.sh $CorrectedReads $Prefix $OutDir
+done
+```
+
+
+Quast and busco were run to assess the effects of racon on assembly quality:
+
+```bash
+for Assembly in $(ls assembly/SMARTdenovo/*/*/*.dmo.lay.utg | grep 'F.oxysporum_fsp_lactucae' | grep 'AJ520'); do
+  Strain=$(echo $Assembly | rev | cut -f2 -d '/' | rev)
+  Organism=$(echo $Assembly | rev | cut -f3 -d '/' | rev)  
+	echo "$Organism - $Strain"
+  OutDir=$(dirname $Assembly)
+	ProgDir=/home/armita/git_repos/emr_repos/tools/seq_tools/assemblers/assembly_qc/quast
+  qsub $ProgDir/sub_quast.sh $Assembly $OutDir
+	OutDir=gene_pred/busco/$Organism/$Strain/assembly
+	BuscoDB=$(ls -d /home/groups/harrisonlab/dbBusco/sordariomyceta_odb9)
+	ProgDir=/home/armita/git_repos/emr_repos/tools/gene_prediction/busco
+	qsub $ProgDir/sub_busco3.sh $Assembly $BuscoDB $OutDir
+done
+```
