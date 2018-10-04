@@ -31,7 +31,8 @@ echo "Fasta reads - $ReadsIn2"
 echo "OutDir - $OutDir"
 
 CurDir=$PWD
-WorkDir=$TMPDIR/racon
+# WorkDir=$TMPDIR/racon
+WorkDir=/data2/scratch2/armita/strawberry_genome/racon
 mkdir -p $WorkDir
 cd $WorkDir
 
