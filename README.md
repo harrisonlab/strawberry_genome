@@ -153,7 +153,7 @@ done
 Quast and busco were run to assess the effects of racon on assembly quality:
 
 ```bash
-for Assembly in $(ls assembly/SMARTdenovo/*/*/*.dmo.lay.utg | grep 'F.oxysporum_fsp_lactucae' | grep 'AJ520'); do
+for Assembly in $(ls assembly/SMARTdenovo/*/*/*.dmo.lay.utg); do
   Strain=$(echo $Assembly | rev | cut -f2 -d '/' | rev)
   Organism=$(echo $Assembly | rev | cut -f3 -d '/' | rev)  
 	echo "$Organism - $Strain"
@@ -161,8 +161,35 @@ for Assembly in $(ls assembly/SMARTdenovo/*/*/*.dmo.lay.utg | grep 'F.oxysporum_
 	ProgDir=/home/armita/git_repos/emr_repos/tools/seq_tools/assemblers/assembly_qc/quast
   qsub $ProgDir/sub_quast.sh $Assembly $OutDir
 	OutDir=gene_pred/busco/$Organism/$Strain/assembly
-	BuscoDB=$(ls -d /home/groups/harrisonlab/dbBusco/sordariomyceta_odb9)
+	BuscoDB=$(ls -d /home/groups/harrisonlab/dbBusco/embryophyta_odb10)
 	ProgDir=/home/armita/git_repos/emr_repos/tools/gene_prediction/busco
 	qsub $ProgDir/sub_busco3.sh $Assembly $BuscoDB $OutDir
+done
+```
+
+
+Error correction using racon:
+
+```bash
+for Assembly in $(ls assembly/SMARTdenovo/*/*/*.dmo.lay.utg); do
+Strain=$(echo $Assembly | rev | cut -f2 -d '/' | rev)
+Organism=$(echo $Assembly | rev | cut -f3 -d '/' | rev)
+echo "$Organism - $Strain"
+# ReadsFq=$(ls qc_dna/minion/*/$Strain/*q.gz)
+Iterations=10
+OutDir=$(dirname $Assembly)"/racon_$Iterations"
+ProgDir=/home/armita/git_repos/emr_repos/scripts/strawberry_genome/scripts
+qsub $ProgDir/sub_racon_strawberry.sh $Assembly $Iterations $OutDir
+done
+```
+
+
+```bash
+ProgDir=/home/armita/git_repos/emr_repos/tools/seq_tools/assemblers/assembly_qc/quast
+for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/*.fasta | grep 'round_10'); do
+OutDir=$(dirname $Assembly)
+echo "" > tmp.txt
+ProgDir=~/git_repos/emr_repos/tools/seq_tools/assemblers/assembly_qc/remove_contaminants
+$ProgDir/remove_contaminants.py --keep_mitochondria --inp $Assembly --out $OutDir/racon_min_500bp_renamed.fasta --coord_file tmp.txt > $OutDir/log.txt
 done
 ```
