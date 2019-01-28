@@ -34,6 +34,47 @@ mkdir -p $OutDir
 cat */*/*.fastq | gzip -cf > $OutDir/${Strain}_2017_reads.fastq.gz
 cat /data/seq_data/minion/2018/*RG*/*/*/*.fastq /data/seq_data/minion/2018/*_Redgauntlet-1D-sheared/*/*/*.fastq | gzip -cf > $OutDir/${Strain}_2018_reads.fastq.gz
 cat /data/seq_data/external/redgauntlet_promethion_downloads/*/postprocessing/*.fastq.gz > $OutDir/${Strain}_keygene.fastq.gz
+
+cd /data2/keygene_nanopore/usbdisk/KG000253/
+ZipDir=/data2/scratch2/armita/strawberry_genome/raw_data/KG000253
+mkdir -p $ZipDir
+cat *zip.* > $ZipDir/KG000253.zip
+cd $ZipDir
+
+# Commands to unzip the archive
+# qlogin -l h=blacklace11.blacklace -pe smp 12 -l virtual_free=8G
+#
+# cd /data2/keygene_nanopore/usbdisk/KG000253/
+# ZipDir=/data2/scratch2/armita/strawberry_genome/raw_data/KG000253
+# mkdir -p $ZipDir
+# ProgDir=/data2/keygene_nanopore/usbdisk/utils/linux
+# $ProgDir/7za e -o $ZipDir $ZipDir/KG000253.zip
+
+# Show which sections of the archive contained the fastq reads
+OutDir=/data2/scratch2/armita/strawberry_genome/raw_data/KG000253
+for File in $(ls *.zip.0*); do
+echo $File
+$ProgDir/7za l $File | grep '.fastq.gz'
+done > $OutDir/tmp.txt
+
+# There were only three fastq files,
+# these were used for read correction and genome assembly
+cd $OutDir
+mv KG000253/*.fastq.gz .
+cat PAD05283.fastq.gz PAD05283b.fastq.gz PAD06089.fastq.gz > /data2/scratch2/armita/strawberry_genome/KG000253_reads.fq.gz
+
+#
+# # cat *zip.* > $ZipDir/KG000253.zip
+# cd $ZipDir
+# ProgDir=/data2/keygene_nanopore/usbdisk/utils/linux
+# # $ProgDir/7za a KG000253.zip
+#
+# ls KG000253.zip* > $ZipDir/filelist.txt
+# # $ProgDir/7za KG000253.zip.001
+# $ProgDir/7za -o $ZipDir filelist.txt
+#
+# /data2/keygene_nanopore/usbdisk
+
 ```
 
 ### Removal of adapters
@@ -86,19 +127,41 @@ cat qc_dna/minion/F.ananassa/redgauntlet/split/* > qc_dna/minion/F.ananassa/redg
   done
 ```
 
+Trimming was performed on the 2nd promethion run:
+```bash
+for RawReads in $(ls ../../../../data2/scratch2/armita/strawberry_genome/raw_data/KG000253/*fastq.gz); do
+  Organism=F.ananastomlinson
+  Strain=redgauntlet
+  echo "$Organism - $Strain"
+  OutDir=qc_dna/minion/$Organism/$Strain
+  ProgDir=/home/armita/git_repos/emr_repos/tools/seq_tools/dna_qc
+  qsub $ProgDir/sub_porechop_high_mem.sh $RawReads $OutDir
+done
+```
+
+```bash
+Fastq1=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/redgauntlet_2017_reads_trim.fastq.gz)
+Fastq2=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/redgauntlet_2018_reads_trim.fastq.gz)
+Fastq3=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/FAH88888_trim.fastq.gz)
+Fastq4=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAC21038_trim.fastq.gz)
+Fastq5=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAC21093_trim.fastq.gz)
+Fastq6=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAD05283_trim.fastq.gz)
+Fastq7=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAD05283b_trim.fastq.gz)
+Fastq8=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAD06089_trim.fastq.gz)
+
+Fastq=/data2/scratch2/armita/strawberry_genome/appended_reads_22-01-19.fq.gz
+cat $Fastq1 $Fastq2 $Fastq3 $Fastq4 $Fastq5 $Fastq6 $Fastq7 $Fastq8 > $Fastq
+```
+
 ### Perform assembly
 
 ```bash
 ProgDir=/home/armita/git_repos/emr_repos/scripts/strawberry_genome/scripts
 qsub $ProgDir/sub_canu_correct.sh
 ```
-
+<!--
 This job failed due the high number of short reads. Following the instructions the
 following commands was used to carry on anyway and the job resubmitted.
-
-```bash
-cat /data/scratch/armita/strawberry_assembly/raw_dna/minion/F.ananassa/redgauntlet/split/* > /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAC21093_trim.fastq.gz
-```
 
 ```
 -- In gatekeeper store 'correction/Fa_Rg_appended.gkpStore':
@@ -132,14 +195,15 @@ cat /data/scratch/armita/strawberry_assembly/raw_dna/minion/F.ananassa/redgauntl
 
 
 --   1210000 1219999      1
-```
+``` -->
 
 
 
 ### Assembly using SMARTdenovo
 
 ```bash
-for CorrectedReads in $(ls assembly/canu-1.6/*/*/*.trimmedReads.fasta.gz); do
+# for CorrectedReads in $(ls assembly/canu-1.6/*/*/*.trimmedReads.fasta.gz); do
+for CorrectedReads in $(ls assembly/canu-1.8/*/*/*.trimmedReads.fasta.gz); do
 Organism=$(echo $CorrectedReads | rev | cut -f3 -d '/' | rev)
 Strain=$(echo $CorrectedReads | rev | cut -f2 -d '/' | rev)
 Prefix="$Strain"_smartdenovo
@@ -185,8 +249,8 @@ done
 
 ```bash
 ProgDir=/home/armita/git_repos/emr_repos/tools/seq_tools/assemblers/assembly_qc/quast
-# for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/*.fasta | grep 'round_10'); do
-for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/*.fasta | grep 'round_6'); do  
+for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/*.fasta | grep 'round_10' | grep -v 'redgauntlet_smartdenovo_racon_round'); do
+# for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/*.fasta | grep 'round_6'); do  
 OutDir=$(dirname $Assembly)
 echo "" > tmp.txt
 ProgDir=~/git_repos/emr_repos/tools/seq_tools/assemblers/assembly_qc/remove_contaminants
@@ -207,7 +271,7 @@ done
 ```
 
 ```bash
-for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/*.fasta | grep -e 'round_7.fasta' -e 'round_8.fasta' -e 'round_9.fasta' -e 'round_10.fasta'); do
+for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/*.fasta | grep -v 'redgauntlet_smartdenovo_racon_round' | grep 'racon_min_500bp_renamed.fasta'); do
 Strain=$(echo $Assembly | rev | cut -f3 -d '/' | rev)
 Organism=$(echo $Assembly | rev | cut -f4 -d '/' | rev)
 echo "$Organism - $Strain"
