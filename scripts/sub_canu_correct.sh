@@ -34,15 +34,19 @@ echo "$Usage"
 
 
 
-Fastq1=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/redgauntlet_2017_reads_trim.fastq.gz)
-Fastq2=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/redgauntlet_2018_reads_trim.fastq.gz)
-Fastq3=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/FAH88888_trim.fastq.gz)
-Fastq4=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAC21038_trim.fastq.gz)
-Fastq5=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAC21093_trim.fastq.gz)
+# Fastq1=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/redgauntlet_2017_reads_trim.fastq.gz)
+# Fastq2=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/redgauntlet_2018_reads_trim.fastq.gz)
+# Fastq3=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/FAH88888_trim.fastq.gz)
+# Fastq4=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAC21038_trim.fastq.gz)
+# Fastq5=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAC21093_trim.fastq.gz)
+# Fastq6=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAD05283_trim.fastq.gz)
+# Fastq7=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAD05283b_trim.fastq.gz)
+# Fastq8=$(ls /data/scratch/armita/strawberry_assembly/qc_dna/minion/F.ananassa/redgauntlet/PAD06089_trim.fastq.gz)
 
-Size=720m
+# Size=720m
+Size=1440m
 Prefix=Fa_Rg_appended
-OutDir=assembly/canu-1.6/F.ananassa/redgauntlet
+OutDir=assembly/canu-1.8/F.ananassa/redgauntlet_haplotyped
 echo "Running Canu with the following inputs:"
 echo "FastqIn - $Fastq1 $Fastq2 $Fastq3 $Fastq4 $Fastq5"
 echo "Size - $Size"
@@ -61,7 +65,8 @@ echo "Concatenating reads"
 mkdir -p $WorkDir
 cd $WorkDir
 mkdir -p /data2/scratch2/armita/strawberry_genome
-Fastq=/data2/scratch2/armita/strawberry_genome/appended_reads.fq.gz
+# Fastq=/data2/scratch2/armita/strawberry_genome/appended_reads.fq.gz
+Fastq=/data2/scratch2/armita/strawberry_genome/appended_reads_22-01-19.fq.gz
 # cat $Fastq1 $Fastq2 $Fastq3 $Fastq4 $Fastq5 > $Fastq
 
 echo "Reads concatenated"
@@ -74,7 +79,6 @@ canu \
   -d $WorkDir/assembly \
   -p $Prefix \
   genomeSize="$Size" \
-  ovsMethod=sequential \
   -nanopore-raw $Fastq \
   2>&1 | tee canu_run_log.txt
 
@@ -86,7 +90,6 @@ canu \
   -d $WorkDir/assembly \
   -p $Prefix \
   genomeSize="$Size" \
-  ovsMethod=sequential \
   -nanopore-corrected assembly/$Prefix.correctedReads.fasta.gz \
   2>&1 | tee canu_run_log.txt
 
