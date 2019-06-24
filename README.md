@@ -203,13 +203,13 @@ following commands was used to carry on anyway and the job resubmitted.
 
 ```bash
 # for CorrectedReads in $(ls assembly/canu-1.6/*/*/*.trimmedReads.fasta.gz); do
-for CorrectedReads in $(ls assembly/canu-1.8/*/*/*.trimmedReads.fasta.gz); do
+for CorrectedReads in $(ls assembly/canu-1.8/*/*/*.trimmedReads.fasta.gz | grep 'haplotyped'); do
 Organism=$(echo $CorrectedReads | rev | cut -f3 -d '/' | rev)
 Strain=$(echo $CorrectedReads | rev | cut -f2 -d '/' | rev)
 Prefix="$Strain"_smartdenovo
 OutDir=assembly/SMARTdenovo/$Organism/"$Strain"
-ProgDir=/home/armita/git_repos/emr_repos/tools/seq_tools/assemblers/SMARTdenovo
-qsub $ProgDir/sub_SMARTdenovo.sh $CorrectedReads $Prefix $OutDir
+ProgDir=/home/armita/git_repos/emr_repos/scripts/strawberry_genome/scripts
+qsub $ProgDir/sub_smartdenovo_strawberry.sh $CorrectedReads $Prefix $OutDir
 done
 ```
 
@@ -249,8 +249,7 @@ done
 
 ```bash
 ProgDir=/home/armita/git_repos/emr_repos/tools/seq_tools/assemblers/assembly_qc/quast
-for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/*.fasta | grep 'round_10' | grep -v 'redgauntlet_smartdenovo_racon_round'); do
-# for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/*.fasta | grep 'round_6'); do  
+for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/*.fasta | grep 'round_10'); do
 OutDir=$(dirname $Assembly)
 echo "" > tmp.txt
 ProgDir=~/git_repos/emr_repos/tools/seq_tools/assemblers/assembly_qc/remove_contaminants
@@ -271,7 +270,7 @@ done
 ```
 
 ```bash
-for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/*.fasta | grep -v 'redgauntlet_smartdenovo_racon_round' | grep 'racon_min_500bp_renamed.fasta'); do
+for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/*.fasta | grep -e 'round_7' -e 'round_8' -e 'round_9'); do
 Strain=$(echo $Assembly | rev | cut -f3 -d '/' | rev)
 Organism=$(echo $Assembly | rev | cut -f4 -d '/' | rev)
 echo "$Organism - $Strain"
@@ -295,6 +294,27 @@ printf "$FileName\t$Complete\t$Duplicated\t$Fragmented\t$Missing\t$Total\n"
 done
 ```
 
+## KAT aseembly qc
+
+KAT kmer spectra analysis
+
+```bash
+for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/racon_min_500bp_renamed.fasta); do
+  Strain=$(echo $Assembly| rev | cut -d '/' -f3 | rev)
+  Organism=$(echo $Assembly | rev | cut -d '/' -f4 | rev)
+  echo "$Organism - $Strain"
+  OutDir=$(dirname $Assembly)/kat
+  Prefix="${Strain}_racon"
+  ProgDir=/home/armita/git_repos/emr_repos/scripts/strawberry_genome/scripts
+  qsub $ProgDir/sub_kat_strawberry.sh $Assembly $OutDir $Prefix
+done
+```
+
+after KAT jobs have finished running, then remove appended trimmed reads
+```bash
+  rm ../../../../home/groups/harrisonlab/project_files/alternaria/qc_dna/paired/*/*/*/F_trim_appended.fq.gz
+  rm ../../../../home/groups/harrisonlab/project_files/alternaria/qc_dna/paired/*/*/*/R_trim_appended.fq.gz
+```
 
 For Stat10
 ```bash
