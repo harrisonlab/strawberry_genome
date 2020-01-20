@@ -202,7 +202,6 @@ following commands was used to carry on anyway and the job resubmitted.
 ### Assembly using SMARTdenovo
 
 ```bash
-# for CorrectedReads in $(ls assembly/canu-1.6/*/*/*.trimmedReads.fasta.gz); do
 for CorrectedReads in $(ls assembly/canu-1.8/*/*/*.trimmedReads.fasta.gz | grep 'haplotyped'); do
 Organism=$(echo $CorrectedReads | rev | cut -f3 -d '/' | rev)
 Strain=$(echo $CorrectedReads | rev | cut -f2 -d '/' | rev)
@@ -312,26 +311,12 @@ done
 
 after KAT jobs have finished running, then remove appended trimmed reads
 ```bash
-  rm ../../../../home/groups/harrisonlab/project_files/alternaria/qc_dna/paired/*/*/*/F_trim_appended.fq.gz
-  rm ../../../../home/groups/harrisonlab/project_files/alternaria/qc_dna/paired/*/*/*/R_trim_appended.fq.gz
+
 ```
 
-For Stat10
+<!--
 ```bash
-# for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/racon_min_500bp_renamed.fasta | grep -e 'Stat10'); do
-# Strain=$(echo $Assembly | rev | cut -f3 -d '/' | rev)
-# Organism=$(echo $Assembly | rev | cut -f4 -d '/' | rev)
-# echo "$Organism - $Strain"
-# # Step 1 extract reads as a .fq file which contain info on the location of the fast5 files
-# # Note - the full path from home must be used
-# ReadDir=raw_dna/nanopolish/$Organism/$Strain
-# mkdir -p $ReadDir
-# ReadsFq=$(ls raw_dna/minion/*/$Strain/*.fastq.gz)
-# Fast5Dir=$(ls -d /data/seq_data/minion/2018/20180504_Statice10-180501/Statice10-180501/GA10000/reads)
-# nanopolish index -v -d $Fast5Dir $ReadsFq
-# done
-
-for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/racon_min_500bp_renamed.fasta | grep -e 'Stat10'); do
+for Assembly in $(ls assembly/SMARTdenovo/*/*/racon_10/racon_min_500bp_renamed.fasta); do
 Strain=$(echo $Assembly | rev | cut -f3 -d '/' | rev)
 Organism=$(echo $Assembly | rev | cut -f4 -d '/' | rev)
 echo "$Organism - $Strain"
@@ -479,3 +464,5 @@ done
   echo -e "$Organism\t$Strain\t$Version\t$Complete\t$Single\t$Fragmented\t$Missing\t$Total"
   done
 ```
+
+ -->
